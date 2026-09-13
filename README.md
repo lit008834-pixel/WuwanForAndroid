@@ -1,15 +1,15 @@
 # WuwanForAndroid
 
-**Wuwan（原 Throne）** 是适用于 Android 的现代化通用代理工具链与网络调试客户端。
+**Wuwan** 是适用于 Android 的现代化通用代理工具链与网络调试客户端。
 
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## 项目介绍 / Introduction
 
-Wuwan for Android（原 Throne）是一款基于 sing-box 官方原生核心深度定制的 Android 通用网络代理客户端。集合全协议栈支持、自定义桌面图标、系统浅色/深色模式、网络连接测试、常用应用分流、节点测速、WebDAV 云备份和桌面小组件等功能，致力于提供更快、更稳定、更简洁的用户体验。
+Wuwan for Android是一款基于 sing-box 官方原生核心深度定制的 Android 通用网络代理客户端。集合全协议栈支持、自定义桌面图标、系统浅色/深色模式、网络连接测试、常用应用分流、节点测速、WebDAV 云备份和桌面小组件等功能，致力于提供更快、更稳定、更简洁的用户体验。
 
-Wuwan for Android (formerly Throne) is a universal network proxy client for Android, deeply customized and built on the official native sing-box core. It combines full protocol-stack support, customizable home-screen icons, system light/dark auto-adaptation, fast connection testing, per-app routing, node speed testing, WebDAV backup, and home-screen widgets in one clean user interface.
+Wuwan for Android is a universal network proxy client for Android, deeply customized and built on the official native sing-box core. It combines full protocol-stack support, customizable home-screen icons, system light/dark auto-adaptation, fast connection testing, per-app routing, node speed testing, WebDAV backup, and home-screen widgets in one clean user interface.
 
 ## 安装包架构说明 / Architecture Notes
 

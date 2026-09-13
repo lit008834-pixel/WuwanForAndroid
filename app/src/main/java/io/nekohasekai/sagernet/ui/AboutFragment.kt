@@ -52,6 +52,9 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
 
         ViewCompat.setOnApplyWindowInsetsListener(view, ListListener)
         toolbar.setTitle(R.string.menu_about)
+        binding.downloadsLink.setOnClickListener {
+            requireContext().launchCustomTab("https://github.com/lit008834-pixel/WuwanForAndroid/releases")
+        }
 
         binding.license.maxLines = LICENSE_COLLAPSED_MAX_LINES
         var isLicenseExpanded = false
@@ -110,7 +113,7 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                                 .subText(SagerNet.appVersionNameForDisplay)
                                 .setOnClickAction {
                                     requireContext().launchCustomTab(
-                                        "https://github.com/throneproj/ThroneForAndroid/releases"
+                                        "https://github.com/lit008834-pixel/WuwanForAndroid/releases"
                                     )
                                 }
                                 .build())
@@ -218,7 +221,7 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                                 .text(R.string.github)
                                 .setOnClickAction {
                                     requireContext().launchCustomTab(
-                                        "https://github.com/throneproj/ThroneForAndroid"
+                                        "https://github.com/lit008834-pixel/WuwanForAndroid"
 
                                     )
                                 }
@@ -299,7 +302,7 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                         tryProxyOutbound()
                     }
                     val response = client.newRequest().apply {
-                        setURL("https://api.github.com/repos/throneproj/ThroneForAndroid/releases/latest")
+                        setURL("https://api.github.com/repos/lit008834-pixel/WuwanForAndroid/releases/latest")
                     }.execute()
                     val release = JSONObject(Util.getStringBox(response.contentString))
                     val releaseName = release.getString("name")

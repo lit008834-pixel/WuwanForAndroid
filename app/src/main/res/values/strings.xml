@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Throne</string>
-    <string name="app_name_long" translatable="false">Throne for Android</string>
-    <string name="app_desc">The universal proxy toolchain for Android, written in Kotlin.</string>
+    <string name="app_name" translatable="false">Wuwan</string>
+    <string name="app_name_long" translatable="false">WuwanForAndroid</string>
+    <string name="app_desc">A modern universal proxy toolchain and network debugging client for Android.</string>
+    <string name="project_intro_title">Project Introduction / 介绍</string>
+    <string name="project_intro_cn">Wuwan for Android（原 Throne）是一款基于 sing-box 官方原生核心深度定制的 Android 通用网络代理客户端。集合全协议栈支持、自定义桌面图标、系统浅色/深色模式、网络连接测试、常用应用分流、节点测速、WebDAV 云备份和桌面小组件等功能，致力于提供更快、更稳定、更简洁的用户体验。</string>
+    <string name="project_intro_en">Wuwan for Android (formerly Throne) is a universal network proxy client for Android, deeply customized and built on the official native sing-box core. It combines full protocol-stack support, customizable home-screen icons, system light/dark auto-adaptation, fast connection testing, per-app routing, node speed testing, WebDAV backup, and home-screen widgets in one clean user interface.</string>
+    <string name="downloads_title">Downloads / 下载</string>
+    <string name="downloads_body_cn">请前往官方 Releases 页面获取经过正式签名的全架构 APK 安装包。</string>
+    <string name="downloads_body_en">Please visit the official Releases page to download officially signed APK packages for all supported architectures.</string>
+    <string name="downloads_link">Go to the Official GitHub Releases Page</string>
+    <string name="architecture_title">Architecture Notes / 安装包架构说明</string>
+    <string name="architecture_notes">• ARM64 (v8a): Suitable for the vast majority of mainstream 64-bit Android phones and tablets;
+
+• armeabi-v7a: Suitable for older 32-bit Android devices or some TV boxes;
+
+• x86_64 / x86: Suitable for mainstream Android emulators running on PC.</string>
     <string name="project">Project</string>
     <string name="github">Source code</string>
     <string name="telegram">Telegram update channel</string>

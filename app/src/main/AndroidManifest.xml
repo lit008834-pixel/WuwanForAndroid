@@ -309,7 +309,7 @@
             android:name="io.nekohasekai.sagernet.bg.TileService"
             android:exported="true"
             android:foregroundServiceType="systemExempted"
-            android:icon="@drawable/ic_throne_tile"
+            android:icon="@drawable/ic_wuwan_tile"
             android:label="@string/tile_title"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:process=":bg"

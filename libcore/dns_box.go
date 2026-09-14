@@ -59,6 +59,18 @@ func (p *platformLocalDNSTransport) Close() error {
 func (p *platformLocalDNSTransport) Reset() {
 }
 
+// 1.15 also dispatches DNS asynchronously. Copy the message before transferring
+// ownership to a worker and invoke the completion callback exactly once.
+func (p *platformLocalDNSTransport) ExchangeAsync(ctx context.Context, message *mDNS.Msg, callback func(*mDNS.Msg, error)) {
+	request := message.Copy()
+	go func() {
+		response, err := p.Exchange(ctx, request)
+		callback(response, err)
+	}()
+}
+
+var _ adapter.DNSTransport = (*platformLocalDNSTransport)(nil)
+
 func (p *platformLocalDNSTransport) Exchange(ctx context.Context, message *mDNS.Msg) (*mDNS.Msg, error) {
 	if p.raw && rawQueryFunc != nil {
 		// Raw - Android 10 及以上才有

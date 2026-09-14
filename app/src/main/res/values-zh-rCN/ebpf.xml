@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mode_ebpf_active">运行中 · eBPF透明代理</string>
+    <string name="mode_vpn_active">运行中 · VPNService模式</string>
+    <string name="mode_proxy_active">运行中 · 本地代理模式</string>
+    <string name="mode_root_ready">未连接 · Root/eBPF可用，连接时再次验证</string>
+    <string name="mode_vpn_ready">未连接 · 可使用VPNService模式</string>
+    <string name="mode_detecting">未连接 · 正在检测Root/eBPF…</string>
+    <string name="mode_details_title">自动选择代理模式</string>
+    <string name="mode_details">启动时可授权Root以尝试eBPF。Root模式需要TCX出口挂载（通常为Linux 6.6及以上）、BPF辅助函数、TUN及SELinux许可。通过现有sing-box内核代理本机单播IPv4/IPv6；代理自身及Android受保护套接字、回环、组播和本地控制流量绕行。不支持或加载、挂载失败时自动回退VPNService。应用预先申请系统VPN许可，以便自动降级；授权不代表建立了系统VPN。启用分应用、进程规则或绕过局域网时保留VPNService行为。沿用现有节点选择、连接开关及日志面板；点击模式栏查看本说明。</string>
+</resources>

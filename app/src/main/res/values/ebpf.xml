@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mode_ebpf_active">Running · eBPF transparent proxy</string>
+    <string name="mode_vpn_active">Running · VPNService mode</string>
+    <string name="mode_proxy_active">Running · Local proxy mode</string>
+    <string name="mode_root_ready">Stopped · Root/eBPF available; verified again on connect</string>
+    <string name="mode_vpn_ready">Stopped · VPNService available</string>
+    <string name="mode_detecting">Stopped · Checking Root/eBPF…</string>
+    <string name="mode_details_title">Automatic proxy mode</string>
+    <string name="mode_details">Grant Root when prompted to try eBPF. Root mode requires Linux TCX egress links (normally 6.6+), BPF helpers, TUN and SELinux permission. It redirects unicast IPv4/IPv6 through the existing sing-box core. Proxy-owned and Android-protected sockets, loopback and local multicast/control traffic are excluded. Unsupported kernels or load/attach failures switch to VPNService automatically. VPN permission is requested in advance to allow fallback. Per-app/process or LAN bypass settings retain VPNService. Use the existing node selector, connection switch and Logs panel; tap the mode label for this explanation.</string>
+</resources>

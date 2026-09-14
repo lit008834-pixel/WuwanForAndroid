@@ -1,0 +1,45 @@
+name: Core and eBPF checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: core-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: libcore/go.mod
+          cache-dependency-path: libcore/go.sum
+      - name: Fetch pinned official core
+        run: bash buildScript/lib/core/get_source.sh
+      - name: Compile and test core adapters
+        working-directory: libcore
+        run: |
+          go mod tidy
+          go test . -tags='with_conntrack,with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api' -count=1
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: resolved-core-modules
+          path: |
+            libcore/go.mod
+            libcore/go.sum
+  ebpf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Compile helper and routing tests
+        run: |
+          gcc -std=c11 -O2 -Wall -Wextra -Werror app/src/main/cpp/ebpf/loader.c -o /tmp/wuwan-ebpf
+          gcc -std=c11 -O2 -Wall -Wextra -Werror app/src/main/cpp/ebpf/program_test.c -o /tmp/wuwan-ebpf-test
+          /tmp/wuwan-ebpf-test
+      - name: Real kernel load and TCX attach in isolated network namespace
+        run: sudo unshare --net /tmp/wuwan-ebpf probe

@@ -1,8 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -30,7 +28,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-go@v6
         with:
-          go-version: ^1.25
+          go-version-file: libcore/go.mod
       - name: Native Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: ./run lib core

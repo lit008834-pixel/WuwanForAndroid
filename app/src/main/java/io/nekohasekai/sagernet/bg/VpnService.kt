@@ -16,6 +16,13 @@ import io.nekohasekai.sagernet.fmt.hysteria.HysteriaBean
 import io.nekohasekai.sagernet.ktx.*
 import io.nekohasekai.sagernet.ui.VpnRequestActivity
 import io.nekohasekai.sagernet.utils.Subnet
+import io.nekohasekai.sagernet.bg.ebpf.RootSession
+import io.nekohasekai.sagernet.bg.ebpf.RuntimeMode
+import io.nekohasekai.sagernet.bg.ebpf.EbpfRestartException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import android.net.VpnService as BaseVpnService
 
 class VpnService : BaseVpnService(),
@@ -32,6 +39,8 @@ class VpnService : BaseVpnService(),
     }
 
     var conn: ParcelFileDescriptor? = null
+    private var rootSession: RootSession? = null
+    private var skipNextRoot = false
 
     private var metered = false
 
@@ -39,7 +48,64 @@ class VpnService : BaseVpnService(),
 
     override suspend fun startProcesses() {
         DataStore.vpnService = this
-        super.startProcesses() // launch proxy instance
+        val skip = skipNextRoot || DataStore.serviceMode != Key.MODE_AUTO
+        skipNextRoot = false
+        // Preserve Android per-app routing and package/process rules: Android's
+        // connection-owner API needs an established system VPN on Android 10+.
+        val config = data.proxy!!.config.config
+        val needsSystemVpn = DataStore.proxyApps || DataStore.bypassLan ||
+            Regex("\"(?:package_name|package_name_regex|process_name|process_path|user_id)\"\\s*:").containsMatchIn(config)
+        if (!skip && !needsSystemVpn) {
+            withContext(Dispatchers.IO) {
+                rootSession = try { RootSession.open(this@VpnService, DataStore.mtu) }
+                catch (error: Exception) {
+                    Logs.i("eBPF unavailable, selecting VPNService: ${error.message}")
+                    null
+                }
+            }
+        } else {
+            Logs.i("Selecting VPNService: rootSkipped=$skip preserveAppOrLanRules=$needsSystemVpn")
+        }
+        try {
+            super.startProcesses() // launch proxy instance
+        } catch (cancel: CancellationException) {
+            throw cancel
+        } catch (error: Exception) {
+            if (rootSession != null) {
+                skipNextRoot = true
+                throw EbpfRestartException(error)
+            }
+            throw error
+        }
+        val session = rootSession
+        if (session != null) {
+            try {
+                withContext(Dispatchers.IO) {
+                    session.activate { error ->
+                        runOnMainDispatcher {
+                            while (rootSession === session && data.state == BaseService.State.Connecting) {
+                                delay(50)
+                            }
+                            if (rootSession === session && data.state == BaseService.State.Connected) {
+                                Logs.w("eBPF runtime failure, switching to VPNService: ${error.message}")
+                                skipNextRoot = true
+                                stopRunner(restart = true)
+                            }
+                        }
+                    }
+                }
+                RuntimeMode.active = "ebpf"
+                Logs.i("Mode=eBPF transparent proxy (TCX + root TUN)")
+            } catch (cancel: CancellationException) {
+                throw cancel
+            } catch (error: Exception) {
+                skipNextRoot = true
+                throw EbpfRestartException(error)
+            }
+        } else {
+            RuntimeMode.active = "vpn"
+            Logs.i("Mode=VPNService")
+        }
     }
 
     override var wakeLock: PowerManager.WakeLock? = null
@@ -52,8 +118,15 @@ class VpnService : BaseVpnService(),
 
     @Suppress("EXPERIMENTAL_API_USAGE")
     override suspend fun killProcesses(): Throwable? {
+        val session = rootSession
+        rootSession = null
+        RuntimeMode.active = "stopped"
+        var rootCleanupError: Throwable? = null
+        withContext(Dispatchers.IO) {
+            try { session?.close() } catch (error: Exception) { rootCleanupError = error }
+        }
         val currentConnection = conn
-        var cleanupError: Throwable? = null
+        var cleanupError: Throwable? = rootCleanupError
         Logs.i(
             "VpnLifecycleTrace stage=tun-close begin " +
                 "hasConnection=${currentConnection != null}"
@@ -113,6 +186,7 @@ class VpnService : BaseVpnService(),
     }
 
     fun startVpn(tunOptionsJson: String, tunPlatformOptionsJson: String): Int {
+        rootSession?.let { return it.tun.fd }
 //        Logs.d(tunOptionsJson)
 //        Logs.d(tunPlatformOptionsJson)
 //        val tunOptions = JSONObject(tunOptionsJson)

@@ -104,6 +104,10 @@ class BaseService {
 
         override fun getState(): Int = (data?.state ?: State.Idle).ordinal
         override fun getProfileName(): String = data?.proxy?.displayProfileName ?: "Idle"
+        override fun getRuntimeMode(): String =
+            if (data?.state != State.Connected) "stopped"
+            else if (DataStore.serviceMode == Key.MODE_PROXY) "proxy"
+            else io.nekohasekai.sagernet.bg.ebpf.RuntimeMode.active
 
         override fun registerCallback(cb: ISagerNetServiceCallback, id: Int) {
             if (id == SagerConnection.CONNECTION_ID_RESTART_BG) {
@@ -498,6 +502,9 @@ class BaseService {
                     data.changeState(State.Connected)
 
                     lateInit()
+                } catch (error: io.nekohasekai.sagernet.bg.ebpf.EbpfRestartException) {
+                    Logs.w(error)
+                    stopRunner(restart = true)
                 } catch (_: CancellationException) { // if the job was cancelled, it is canceller's responsibility to call stopRunner
                 } catch (_: UnknownHostException) {
                     stopRunner(false, getString(R.string.invalid_server))

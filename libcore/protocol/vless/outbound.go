@@ -79,6 +79,7 @@ func RegisterOutbound(registry *outbound.Registry) {
 }
 
 var _ adapter.OutboundWithMultiplex = (*Outbound)(nil)
+var _ adapter.InterfaceUpdateListener = (*Outbound)(nil)
 
 type Outbound struct {
 	outbound.Adapter
@@ -191,7 +192,7 @@ func (h *Outbound) MultiplexEnabled() bool {
 	return h.multiplexDialer != nil
 }
 
-func (h *Outbound) InterfaceUpdated() {
+func (h *Outbound) InterfaceUpdated(ctx context.Context) {
 	if h.transport != nil {
 		_ = h.transport.Close()
 	}

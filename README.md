@@ -1,10 +1,29 @@
 # WuwanForAndroid
 
-## Root/eBPF 与无 Root VPN 自动模式
-
-主分支支持在启动时探测 Root、BPF 文件系统、BTF 和 bpftool/tc 加载器。满足全部条件时选择 Root/eBPF 代理分支；否则自动回退到 Android `VpnService`。实现边界、设备前置条件、构建说明、真机验证和 GPT/GTP 生成口令见 [ROOT_EBPF_VPN.md](ROOT_EBPF_VPN.md)。
-
 **Wuwan** 是适用于 Android 的现代化通用代理工具链与网络调试客户端。
+
+## Root/eBPF 与系统 VPN 双模式
+
+当前开发版本将官方核心锁定为 **sing-box v1.15.0-alpha.3**（预发布版，并非 1.15 正式版）。
+启动时实际请求 `su` 授权并试载 BPF 程序；连接时再次验证，成功后使用
+**eBPF TCX 出口重定向 + Root TUN + 原 sing-box 核心**，不调用系统 VPN 的
+`Builder.establish()`。无 Root、BPF 系统调用不可用、辅助函数/TCX/SELinux 权限
+不满足或挂载失败时，自动切换 **VPNService 模式**。内核具有 BPF 系统调用并不等于
+支持此后端；TCX 通常要求 Linux 6.6+，GKI 或机型名称不能代替实际检测。
+
+在“设置 → 运行模式”选择“自动”启用双模式；手动 VPN 始终使用系统 VPN，
+“仅代理”保留本地代理端口功能。顶部显示实际运行模式，沿用原连接开关、节点面板和日志面板。分应用/进程规则、
+绕过局域网继续使用系统 VPN，保留原来的规则行为。系统 VPN 许可会预先请求，
+以保证降级时能够建立 VPN；授权本身不代表已建立 VPN。
+
+“全局”指本机可路由的单播 IP 流量接入原代理规则引擎，原规则仍决定代理或直连。
+代理自身 UID、Android 受保护套接字、回环、组播/广播及 IPv6 链路本地控制流量绕行，防止代理回环和破坏
+网络发现。它不是所有协议都可代理的保证，也不是防泄漏/断网保护功能。
+接口新建或模式降级时可能存在直连窗口；设备端验证完成前，不应宣称已经覆盖全部流量。
+
+- [部署、签名、使用与真机验证](docs/ROOT_EBPF.md)
+- [生产构建工作流](.github/workflows/production-release.yml)：main 推送自动构建签名 APK，版本标签发布 Release。
+- 原有 CI/Preview/Release 工作流保留；只有 **Production Release** 强制正式密钥，禁止调试签名兜底。
 
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)

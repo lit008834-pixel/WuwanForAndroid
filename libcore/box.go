@@ -102,7 +102,7 @@ func ResetAllConnections(system bool) {
 		log.Println("ResetAllConnections: no main instance, skip system=", system)
 		return
 	}
-	b.Network().ResetNetwork()
+	b.Network().ResetNetwork(context.Background())
 	log.Println("ResetAllConnections: Network.ResetNetwork() done system=", system)
 }
 
@@ -166,7 +166,7 @@ func newSingBoxInstance(config string, localTransport LocalDNSTransport, platfor
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx = box.Context(ctx,
 		nekoboxAndroidInboundRegistry(), nekoboxAndroidOutboundRegistry(), nekoboxAndroidEndpointRegistry(),
-		nekoboxAndroidDNSTransportRegistry(localTransport), nekoboxAndroidServiceRegistry(),
+		nekoboxAndroidDNSTransportRegistry(localTransport), nekoboxAndroidServiceRegistry(), nekoboxAndroidCertificateRegistry(),
 	)
 	ctx = service.ContextWithDefaultRegistry(ctx)
 	// 每 box 注册独立的 PlatformInterface 实例（对齐官方 libbox 结构）。

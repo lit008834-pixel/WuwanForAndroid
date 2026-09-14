@@ -63,6 +63,21 @@ class MainActivity : ThemedActivity(),
     lateinit var binding: LayoutMainBinding
     lateinit var navigation: NavigationView
     private var currentMainFragment: ToolbarFragment? = null
+    private var rootReady: Boolean? = null
+
+    private fun updateProxyMode() {
+        val running = runCatching { connection.service?.runtimeMode }.getOrNull()
+        binding.proxyMode.setText(when (running) {
+            "ebpf" -> R.string.mode_ebpf_active
+            "vpn" -> R.string.mode_vpn_active
+            "proxy" -> R.string.mode_proxy_active
+            else -> when (rootReady) {
+                true -> R.string.mode_root_ready
+                false -> R.string.mode_vpn_ready
+                null -> R.string.mode_detecting
+            }
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,6 +120,20 @@ class MainActivity : ThemedActivity(),
         binding.stats.setOnClickListener { if (DataStore.serviceState.connected) binding.stats.testConnection() }
 
         setContentView(binding.root)
+        binding.proxyMode.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.mode_details_title)
+                .setMessage(R.string.mode_details)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
+        runOnDefaultDispatcher {
+            val ready = io.nekohasekai.sagernet.bg.ebpf.RootProbe.inspect(this@MainActivity)
+            onMainDispatcher {
+                rootReady = ready
+                if (!isDestroyed) updateProxyMode()
+            }
+        }
         currentMainFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_holder) as? ToolbarFragment
                 ?: currentMainFragment
@@ -456,6 +485,7 @@ class MainActivity : ThemedActivity(),
 
         binding.fab.changeState(state, DataStore.serviceState, animate)
         binding.stats.changeState(state)
+        updateProxyMode()
         syncMainControls(
             showWhenConnected = state == BaseService.State.Connected,
             animate = animateControls,

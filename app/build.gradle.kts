@@ -9,6 +9,19 @@ plugins {
 
 setupApp()
 
+val ebpfJni = layout.buildDirectory.dir("generated/ebpfJni")
+val buildEbpfHelper by tasks.registering(Exec::class) {
+    val ndk = androidComponents.sdkComponents.ndkDirectory
+    inputs.files(rootProject.file("buildScript/ebpf/build.sh"), fileTree("src/main/cpp/ebpf"))
+    inputs.property("ndkVersion", "25.0.8775105")
+    outputs.dir(ebpfJni)
+    workingDir(rootProject.projectDir)
+    doFirst {
+        commandLine("bash", "buildScript/ebpf/build.sh", ndk.get().asFile.absolutePath,
+            ebpfJni.get().asFile.absolutePath)
+    }
+}
+
 val generatedLicenseAssets = layout.buildDirectory.dir("generated/assets/rootLicense")
 val generateRootLicenseAsset by tasks.registering(Copy::class) {
     from(rootProject.layout.projectDirectory.file("LICENSE"))
@@ -16,6 +29,7 @@ val generateRootLicenseAsset by tasks.registering(Copy::class) {
 }
 
 android {
+    ndkVersion = "25.0.8775105"
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
     }
@@ -37,6 +51,7 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            keepDebugSymbols += "**/libwuwan_ebpf.so"
         }
     }
     androidResources {
@@ -44,11 +59,13 @@ android {
     }
     sourceSets.named("main") {
         assets.srcDir(generatedLicenseAssets)
+        jniLibs.srcDir(ebpfJni)
     }
 }
 
 tasks.matching { it.name == "preBuild" }.configureEach {
     dependsOn(generateRootLicenseAsset)
+    dependsOn(buildEbpfHelper)
 }
 
 dependencies {

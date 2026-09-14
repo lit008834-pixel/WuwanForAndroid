@@ -1,7 +1,9 @@
 package libcore
 
 import (
+	"context"
 	"encoding/json"
+	"os"
 	"errors"
 	"fmt"
 	"libcore/procfs"
@@ -115,6 +117,7 @@ func (w *boxPlatformInterfaceWrapper) OpenInterface(options *tun.Options, platfo
 	}
 	//
 	options.FileDescriptor = int(tunFd)
+	options.Name = tunNameFromFD(int(tunFd), options.Name)
 	w.myTunName = options.Name
 	return tun.New(*options)
 }
@@ -189,7 +192,7 @@ func (w *boxPlatformInterfaceWrapper) RequestPermissionForWIFIState() error {
 	return nil
 }
 
-func (w *boxPlatformInterfaceWrapper) ReadWIFIState() adapter.WIFIState {
+func (w *boxPlatformInterfaceWrapper) ReadWIFIState(ctx context.Context) adapter.WIFIState {
 	state := strings.Split(intfBox.WIFIState(), ",")
 	return adapter.WIFIState{
 		SSID:  state[0],
@@ -246,7 +249,7 @@ func (w *boxPlatformInterfaceWrapper) FindConnectionOwner(request *adapter.FindC
 	if packageName != "" {
 		packageNames = []string{packageName}
 	}
-	return &adapter.ConnectionOwner{UserId: uid, AndroidPackageNames: packageNames}, nil
+	return &adapter.ConnectionOwner{UserId: uid, PackageNames: packageNames}, nil
 }
 
 func (w *boxPlatformInterfaceWrapper) UsePlatformWIFIMonitor() bool {
@@ -302,3 +305,24 @@ func (w *boxPlatformLogWriterWrapper) WriteMessage(level sblog.Level, message st
 	}
 	platformLog.Write([]byte(message))
 }
+
+// sing-box 1.15 platform additions. Wuwan handles root TUN outside libbox;
+// shell, bridge and auto-redirect are not Android platform capabilities here.
+func (w *boxPlatformInterfaceWrapper) ProcessPlatformOptions(options option.TunPlatformOptions) error { return nil }
+func (w *boxPlatformInterfaceWrapper) CancelNotification(identifier string, typeID int32) error { return nil }
+func (w *boxPlatformInterfaceWrapper) UsePlatformNeighborResolver() bool { return false }
+func (w *boxPlatformInterfaceWrapper) StartNeighborMonitor(listener adapter.NeighborUpdateListener) error { return os.ErrInvalid }
+func (w *boxPlatformInterfaceWrapper) CloseNeighborMonitor(listener adapter.NeighborUpdateListener) error { return nil }
+func (w *boxPlatformInterfaceWrapper) UsePlatformShell() bool { return false }
+func (w *boxPlatformInterfaceWrapper) CheckPlatformShell() error { return os.ErrInvalid }
+func (w *boxPlatformInterfaceWrapper) OpenShellSession(user *adapter.PlatformUser, command string, env []string, term string, rows int32, cols int32) (adapter.ShellSession, error) { return nil, os.ErrInvalid }
+func (w *boxPlatformInterfaceWrapper) LookupUser(username string) (*adapter.PlatformUser, error) { return nil, os.ErrInvalid }
+func (w *boxPlatformInterfaceWrapper) LookupSFTPServer() (string, error) { return "", os.ErrInvalid }
+func (w *boxPlatformInterfaceWrapper) ReadSystemSSHHostKey() ([]byte, error) { return nil, os.ErrInvalid }
+func (w *boxPlatformInterfaceWrapper) TailscaleHostname() string { return "Wuwan" }
+func (w *boxPlatformInterfaceWrapper) UsePlatformBridge() bool { return false }
+func (w *boxPlatformInterfaceWrapper) CreateBridge(options adapter.BridgeOptions) (adapter.BridgeSession, error) { return nil, os.ErrInvalid }
+func (w *boxPlatformInterfaceWrapper) UsePlatformAutoRedirect() bool { return false }
+func (w *boxPlatformInterfaceWrapper) CreateAutoRedirect(options adapter.AutoRedirectOptions) (adapter.AutoRedirectSession, error) { return nil, os.ErrInvalid }
+
+var _ adapter.PlatformInterface = (*boxPlatformInterfaceWrapper)(nil)

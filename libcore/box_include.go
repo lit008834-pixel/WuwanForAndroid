@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/sagernet/sing-box/adapter"
+	"github.com/sagernet/sing-box/adapter/certificate"
 	"github.com/sagernet/sing-box/adapter/endpoint"
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/adapter/inbound"
@@ -146,4 +147,8 @@ func nekoboxAndroidServiceRegistry() *service.Registry {
 	registry := service.NewRegistry()
 
 	return registry
+}
+
+func nekoboxAndroidCertificateRegistry() *certificate.Registry {
+	return certificate.NewRegistry()
 }

@@ -1,0 +1,89 @@
+name: Production Release
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - name: Require production signing identity
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          ALIAS_NAME: ${{ secrets.ALIAS_NAME }}
+          ALIAS_PASS: ${{ secrets.ALIAS_PASS }}
+        run: |
+          for name in RELEASE_KEYSTORE_BASE64 KEYSTORE_PASS ALIAS_NAME ALIAS_PASS; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing production signing secret: $name. Debug signing is not permitted."
+              exit 1
+            fi
+          done
+          printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > release.keystore
+          chmod 600 release.keystore
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: libcore/go.mod
+          cache-dependency-path: libcore/go.sum
+      - name: Install Android build requirements
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.1' 'ndk;25.0.8775105'
+      - name: Build pinned sing-box AAR
+        run: ./run lib core
+      - name: Build and verify signed release APKs
+        env:
+          BUILD_PLUGIN: none
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          ALIAS_NAME: ${{ secrets.ALIAS_NAME }}
+          ALIAS_PASS: ${{ secrets.ALIAS_PASS }}
+        run: |
+          printf 'sdk.dir=%s\n' "$ANDROID_HOME" > local.properties
+          ./run init action gradle
+          ./gradlew app:testOssDebugUnitTest app:assembleOssRelease
+          mapfile -t apks < <(find app/build/outputs/apk/oss/release -name '*.apk')
+          test "${#apks[@]}" -gt 0
+          mkdir -p artifacts
+          for apk in "${apks[@]}"; do
+            "$ANDROID_HOME/build-tools/35.0.1/apksigner" verify --verbose "$apk"
+            cp "$apk" artifacts/
+          done
+          cp nb4a.properties artifacts/
+          git rev-parse HEAD > artifacts/source-commit.txt
+          (cd artifacts && sha256sum *.apk > SHA256SUMS)
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Wuwan-production-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+      - name: Remove signing material
+        if: always()
+        run: rm -f release.keystore
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: Wuwan-production-${{ github.sha }}
+          path: artifacts
+      - name: Publish tagged release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" artifacts/* --verify-tag --title "$RELEASE_TAG" --generate-notes

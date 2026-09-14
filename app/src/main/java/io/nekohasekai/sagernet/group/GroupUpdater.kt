@@ -63,7 +63,7 @@ abstract class GroupUpdater {
                         SagerNet.underlyingNetwork != null &&
                         DataStore.enableFakeDns &&
                         DataStore.serviceState.started &&
-                        DataStore.serviceMode == Key.MODE_VPN
+                        DataStore.effectiveServiceMode == Key.MODE_VPN
                     ) {
                         // FakeDNS
                         SagerNet.underlyingNetwork!!

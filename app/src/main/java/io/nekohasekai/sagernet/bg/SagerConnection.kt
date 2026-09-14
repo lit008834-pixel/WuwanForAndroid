@@ -22,7 +22,7 @@ class SagerConnection(
 
     companion object {
         val serviceClass
-            get() = when (DataStore.serviceMode) {
+            get() = when (RootModeManager.resolveConfiguredMode()) {
                 Key.MODE_PROXY -> ProxyService::class
                 Key.MODE_VPN -> VpnService::class
                 else -> throw UnknownError()

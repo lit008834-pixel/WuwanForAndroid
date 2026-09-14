@@ -75,6 +75,7 @@
     <string name="group_duplicate">Duplicate: \n%s</string>
     <!-- misc -->
     <string name="service_mode">Service Mode</string>
+    <string name="service_mode_auto">Auto: Root/eBPF, otherwise VPN</string>
     <string name="service_mode_proxy">Proxy only</string>
     <string name="service_mode_vpn" translatable="false">VPN</string>
     <string name="port_proxy">Proxy Port</string>

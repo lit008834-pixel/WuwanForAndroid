@@ -1,5 +1,9 @@
 # WuwanForAndroid
 
+## Root/eBPF 与无 Root VPN 自动模式
+
+主分支支持在启动时探测 Root、BPF 文件系统、BTF 和 bpftool/tc 加载器。满足全部条件时选择 Root/eBPF 代理分支；否则自动回退到 Android `VpnService`。实现边界、设备前置条件、构建说明、真机验证和 GPT/GTP 生成口令见 [ROOT_EBPF_VPN.md](ROOT_EBPF_VPN.md)。
+
 **Wuwan** 是适用于 Android 的现代化通用代理工具链与网络调试客户端。
 
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)

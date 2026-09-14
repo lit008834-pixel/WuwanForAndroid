@@ -94,7 +94,7 @@ class VpnService : BaseVpnService(),
         ServiceNotification(this, profileName, "service-vpn")
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (DataStore.serviceMode == Key.MODE_VPN) {
+        if (RootModeManager.resolveConfiguredMode() == Key.MODE_VPN) {
             if (prepare(this) != null) {
                 startActivity(
                     Intent(

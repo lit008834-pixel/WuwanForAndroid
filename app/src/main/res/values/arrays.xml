@@ -299,6 +299,7 @@
     </string-array>
 
     <string-array name="service_modes">
+        <item>@string/service_mode_auto</item>
         <item>@string/service_mode_vpn</item>
         <item>@string/service_mode_proxy</item>
         <!--
@@ -306,6 +307,7 @@
         -->
     </string-array>
     <string-array name="service_mode_values">
+        <item>auto</item>
         <item>vpn</item>
         <item>proxy</item>
         <!--

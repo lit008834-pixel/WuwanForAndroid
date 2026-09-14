@@ -35,7 +35,7 @@
             app:title="@string/language"
             app:useSimpleSummaryProvider="true" />
         <moe.matsuri.nb4a.ui.SimpleMenuPreference
-            app:defaultValue="vpn"
+            app:defaultValue="auto"
             app:entries="@array/service_modes"
             app:entryValues="@array/service_mode_values"
             app:icon="@drawable/ic_device_developer_mode"
